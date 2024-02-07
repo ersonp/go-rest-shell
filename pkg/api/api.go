@@ -31,10 +31,10 @@ func New(host string, port int, logger *log.Logger) *API {
 }
 
 func (api *API) initRoutes() {
-	http.HandleFunc("/shell", api.shellHandler)
+	http.HandleFunc("api/cmd", api.cmdHandler)
 }
 
-func (api *API) shellHandler(w http.ResponseWriter, r *http.Request) {
+func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
