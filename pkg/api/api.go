@@ -42,8 +42,13 @@ func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.DefaultServeMux.ServeHTTP(w, r)
 }
 
-func (api *API) Start() {
+func (api *API) Start() error {
 	addr := fmt.Sprintf("%s:%d", api.Host, api.Port)
 	api.log.Printf("API listening on %s", addr)
-	http.ListenAndServe(addr, api)
+	err := http.ListenAndServe(addr, api)
+	if err != nil {
+		return fmt.Errorf("failed to start server: %w", err)
+	}
+
+	return nil
 }

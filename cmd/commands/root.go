@@ -13,5 +13,8 @@ func Execute() {
 	port := flag.Int("port", 8080, "Port to run the server on")
 	flag.Parse()
 	api := api.New(*host, *port, log.Default())
-	api.Start()
+	err := api.Start()
+	if err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
