@@ -31,7 +31,7 @@ func New(host string, port int, logger *log.Logger) *API {
 }
 
 func (api *API) initRoutes() {
-	http.HandleFunc("api/cmd", api.cmdHandler)
+	http.HandleFunc("/api/cmd", api.cmdHandler)
 }
 
 func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
