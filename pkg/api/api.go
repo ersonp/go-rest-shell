@@ -72,7 +72,7 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write the command output to the response
-	fmt.Fprintf(w, "Command output:\n%s\n", output)
+	fmt.Fprintf(w, "%s\n", output)
 
 }
 
