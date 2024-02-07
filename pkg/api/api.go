@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+
+	"github.com/ersonp/go-rest-shell/pkg/shell"
 )
 
 type API struct {
@@ -55,8 +57,8 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Execute the command
-	cmd := exec.Command("sh", "-c", ex.Command)
+	// Execute the command depending on the OS
+	cmd := shell.Execute(ex.Command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// Check if the command failed because it was not found
