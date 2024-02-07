@@ -16,7 +16,7 @@ type API struct {
 	log  *log.Logger
 }
 
-type Shell struct {
+type Executor struct {
 	Command string `json:"command"`
 }
 
@@ -49,14 +49,14 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close() // Close the request body
 
 	// Unmarshal the request body into a Shell struct
-	var shell Shell
-	if err := json.Unmarshal(body, &shell); err != nil {
+	var ex Executor
+	if err := json.Unmarshal(body, &ex); err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
 
 	// Execute the command
-	cmd := exec.Command("sh", "-c", shell.Command)
+	cmd := exec.Command("sh", "-c", ex.Command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// Check if the command failed because it was not found
