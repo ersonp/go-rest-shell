@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -20,6 +21,13 @@ type API struct {
 
 type Executor struct {
 	Command string `json:"command"`
+}
+
+func (ex *Executor) Validate() error {
+	if ex.Command == "" {
+		return errors.New("command is required")
+	}
+	return nil
 }
 
 func New(host string, port int, logger *log.Logger) *API {
@@ -59,6 +67,14 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 		api.log.Printf("Failed to parse request body: %v, Method: %s, URL: %s, RemoteAddr: %s",
 			err, r.Method, r.URL, r.RemoteAddr)
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
+
+	// Validate the Executor
+	if err := ex.Validate(); err != nil {
+		api.log.Printf("Invalid request body: %v, Method: %s, URL: %s, RemoteAddr: %s",
+			err, r.Method, r.URL, r.RemoteAddr)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
