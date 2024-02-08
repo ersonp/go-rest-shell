@@ -46,6 +46,8 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the command from the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		api.log.Printf("Failed to read request body: %v, Method: %s, URL: %s, RemoteAddr: %s",
+			err, r.Method, r.URL, r.RemoteAddr)
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
@@ -54,6 +56,8 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	// Unmarshal the request body into a Shell struct
 	var ex Executor
 	if err := json.Unmarshal(body, &ex); err != nil {
+		api.log.Printf("Failed to parse request body: %v, Method: %s, URL: %s, RemoteAddr: %s",
+			err, r.Method, r.URL, r.RemoteAddr)
 		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
 		return
 	}
@@ -62,6 +66,8 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 	cmd := shell.Execute(ex.Command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		api.log.Printf("Failed to execute command: %v, Command: %s, Method: %s, URL: %s, RemoteAddr: %s",
+			err, ex.Command, r.Method, r.URL, r.RemoteAddr)
 		// Check if the command failed because it was not found
 		if exitError, ok := err.(*exec.ExitError); ok {
 			if exitError.ExitCode() == 127 {
