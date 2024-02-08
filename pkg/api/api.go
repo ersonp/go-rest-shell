@@ -12,10 +12,10 @@ import (
 )
 
 type API struct {
-	http.Handler
 	Host string
 	Port int
 	log  *log.Logger
+	Mux  *http.ServeMux
 }
 
 type Executor struct {
@@ -27,13 +27,14 @@ func New(host string, port int, logger *log.Logger) *API {
 		Host: host,
 		Port: port,
 		log:  logger,
+		Mux:  http.NewServeMux(),
 	}
 	api.initRoutes()
 	return api
 }
 
 func (api *API) initRoutes() {
-	http.HandleFunc("/api/cmd", api.cmdHandler)
+	api.Mux.HandleFunc("/api/cmd", api.cmdHandler)
 }
 
 func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +81,7 @@ func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
 
 func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	api.log.Printf("%s - %s %s", r.RemoteAddr, r.Method, r.URL)
-	http.DefaultServeMux.ServeHTTP(w, r)
+	api.Mux.ServeHTTP(w, r)
 }
 
 func (api *API) Start() error {
