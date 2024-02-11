@@ -42,14 +42,10 @@ func New(host string, port int, logger *log.Logger) *API {
 }
 
 func (api *API) initRoutes() {
-	api.Mux.HandleFunc("/api/cmd", api.cmdHandler)
+	api.Mux.HandleFunc("POST /api/cmd", api.cmdHandler)
 }
 
 func (api *API) cmdHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
 
 	// Parse the command from the request body
 	body, err := io.ReadAll(r.Body)
