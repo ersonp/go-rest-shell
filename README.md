@@ -52,8 +52,20 @@ or use Postman.
 Replace `"ls"` with the command you want to execute.
 
 ## Testing the Project
+
 To run the tests, use the go test command:
 ```sh
 go test ./...
 ```
 This will run all tests in the project.
+
+## Docker
+
+To build use:
+```sh
+docker build -t rest-shell .
+```
+Tu run use:
+```sh
+docker run -p 8080:8080 rest-shell
+```
